@@ -96,6 +96,3 @@ class Window:
                 surface.set_alpha(128)
                 surface.fill(white)
                 self.window.blit(surface, (positions_x, positions_y))
-                
-
-                
