@@ -1,4 +1,4 @@
-from Bytes_Universe_Game_Engine_V1 import Window
+from configinterna_game import Window
 import pygame as pg 
 import random
 import time
@@ -231,3 +231,81 @@ class Snake_Game:
         self.snake_position = [(40, 20), (41, 20), (41, 21), (41, 22), (41, 23), (42, 23)]
         self.apple_position = (10, 10)
         self.snake_direction = (-1, 0)
+
+w = Window(screen_resolution=(1272, 720))
+snake_game = Snake_Game()
+
+while True:
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            pg.quit()
+            quit()
+        if event.type == pg.KEYDOWN:
+            if w.home_menu == False:
+                snake_game.key_pressed_log = pg.key.name(event.key)
+                if snake_game.key_pressed == False:
+                    snake_game.snake_change_direction(pg.key.name(event.key))
+                    snake_game.key_pressed = True
+            if pg.key.name(event.key) == 'escape':
+                w.pause_menu = w.pause_menu == False
+
+    # informações do mouse 
+    mouse_position  = pg.mouse.get_pos()
+    mouse_input = pg.mouse.get_pressed()
+    mouse_click = w.mouse_has_clicked(mouse_input)
+    w.mouse = (mouse_position, mouse_input, mouse_click)
+
+    #tela inicial
+    w.clear_window('black')
+
+    if w.home_menu == True:
+        # animação da tela inicial de menu
+        snake_game.home_screen_animation(w.window)
+
+        # Menu da tela inicial 
+        button_action = w.home_screen([('Start', 'green', 'gray')])
+
+        if button_action == 'Start':
+            w.home_menu = False
+            snake_game.snake_position = [(40, 20), (41, 20), (41, 21), (41, 22), (41, 23), (42, 23)]
+            snake_game.snake_direction = (-1, 0)
+            snake_game.sort_apple_position()
+    else:
+        if w.pause_menu == False and snake_game.countdown == -1 and snake_game.end_game == False:
+            snake_game.update_snake_position(snake_game.snake_position)
+
+        snake_game.clear_map(snake_game.map)
+        snake_game.add_snake_position(snake_game.map_size, snake_game.snake_position)
+        snake_game.add_apple_position(snake_game.map_size, snake_game.apple_position)
+        snake_game.draw_map_elements(w.window)
+        snake_game.draw_score(w.window)
+        snake_game.snake_get_apple()
+        snake_game.end_of_game()
+
+        if w.pause_menu == False and snake_game.countdown >= 0 and snake_game.end_game == False:
+            snake_game.game_start_countdown(w.window)
+
+        if snake_game.end_game == True:
+            snake_game.draw_end_game(w.window)
+
+        #menu de pause
+        if w.pause_menu == True:
+            button_action = w.pause_screen([('Home Menu', 'green'), ('Restart', 'blue light 2'), ('Quit Game', 'red')], button_layout=(3, 3))
+            snake_game.countdown = 3
+            if button_action == 'Home Menu':
+                w.pause_menu = False
+                w.home_menu = True
+                snake_game.reset_game()
+            elif button_action == 'Restart':
+                w.pause_menu = False
+                snake_game.reset_game()
+            elif button_action == 'Quit Game':
+                pg.quit()
+                quit()
+
+    w.last_click_status = mouse_input
+
+    pg.display.update()
+    w.fps(30)
+    snake_game.key_pressed = False
+    snake_game.snake_change_direction(snake_game.key_pressed_log)
